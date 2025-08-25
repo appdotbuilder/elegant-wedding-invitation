@@ -1,14 +1,30 @@
+import { db } from '../db';
+import { guestsTable } from '../db/schema';
 import { type CreateGuestInput, type Guest } from '../schema';
 
-export async function createGuest(input: CreateGuestInput): Promise<Guest> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new guest record in the database.
-    // This will be used when someone opens an invitation for the first time.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
+export const createGuest = async (input: CreateGuestInput): Promise<Guest> => {
+  try {
+    // Insert guest record
+    const result = await db.insert(guestsTable)
+      .values({
         name: input.name,
         email: input.email,
-        phone: input.phone,
-        created_at: new Date() // Placeholder date
-    } as Guest);
-}
+        phone: input.phone
+      })
+      .returning()
+      .execute();
+
+    // Return the created guest
+    const guest = result[0];
+    return {
+      id: guest.id,
+      name: guest.name,
+      email: guest.email,
+      phone: guest.phone,
+      created_at: guest.created_at
+    };
+  } catch (error) {
+    console.error('Guest creation failed:', error);
+    throw error;
+  }
+};

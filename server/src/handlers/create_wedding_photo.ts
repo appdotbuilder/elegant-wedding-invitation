@@ -1,15 +1,25 @@
+import { db } from '../db';
+import { weddingPhotosTable } from '../db/schema';
 import { type CreateWeddingPhotoInput, type WeddingPhoto } from '../schema';
 
-export async function createWeddingPhoto(input: CreateWeddingPhotoInput): Promise<WeddingPhoto> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is adding a new wedding photo to the gallery.
-    // This is used for admin functionality to manage the photo collection.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
+export const createWeddingPhoto = async (input: CreateWeddingPhotoInput): Promise<WeddingPhoto> => {
+  try {
+    // Insert wedding photo record
+    const result = await db.insert(weddingPhotosTable)
+      .values({
         url: input.url,
         alt_text: input.alt_text,
         is_main_photo: input.is_main_photo,
-        gallery_order: input.gallery_order,
-        created_at: new Date() // Placeholder date
-    } as WeddingPhoto);
-}
+        gallery_order: input.gallery_order
+      })
+      .returning()
+      .execute();
+
+    // Return the created wedding photo
+    const weddingPhoto = result[0];
+    return weddingPhoto;
+  } catch (error) {
+    console.error('Wedding photo creation failed:', error);
+    throw error;
+  }
+};

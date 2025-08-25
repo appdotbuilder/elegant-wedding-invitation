@@ -1,8 +1,26 @@
+import { db } from '../db';
+import { guestsTable } from '../db/schema';
 import { type Guest } from '../schema';
+import { eq } from 'drizzle-orm';
 
 export async function getGuestByName(name: string): Promise<Guest | null> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is finding a guest by their name for the envelope page.
-    // This is used to personalize the "Dear [Guest Name]" greeting.
-    return Promise.resolve(null);
+  try {
+    // Query guest by exact name match
+    const results = await db.select()
+      .from(guestsTable)
+      .where(eq(guestsTable.name, name))
+      .limit(1)
+      .execute();
+
+    // Return null if no guest found
+    if (results.length === 0) {
+      return null;
+    }
+
+    // Return the first matching guest
+    return results[0];
+  } catch (error) {
+    console.error('Failed to get guest by name:', error);
+    throw error;
+  }
 }
